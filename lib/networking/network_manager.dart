@@ -12,13 +12,10 @@ class NetworkManager {
   NetworkLearning? learning;
   NetworkConfig? config;
 
-  NetworkManager({
-    this.client,
-    this.learning,
-    this.config,
-  });
+  NetworkManager({this.client, this.learning, this.config});
 
-  GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType> get<ResponseType extends Serializable, ErrorType extends Serializable>({
+  GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType>
+  get<ResponseType extends Serializable, ErrorType extends Serializable>({
     required String url,
     required ResponseType type,
     required ErrorType errorType,
@@ -31,6 +28,7 @@ class NetworkManager {
     String? tag,
   }) {
     return GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType>(MethodType.GET, learning, config!)
+        .httpClient(client)
         .url(url)
         .type(type)
         .errorType(errorType)
@@ -43,7 +41,8 @@ class NetworkManager {
         .tag(tag);
   }
 
-  GenericRequestObject<RequestType, ResponseType, ErrorType> post<RequestType extends Serializable, ResponseType extends Serializable, ErrorType extends Serializable>({
+  GenericRequestObject<RequestType, ResponseType, ErrorType>
+  post<RequestType extends Serializable, ResponseType extends Serializable, ErrorType extends Serializable>({
     required String url,
     required dynamic body,
     required ResponseType type,
@@ -57,6 +56,7 @@ class NetworkManager {
     String? tag,
   }) {
     return GenericRequestObject<RequestType, ResponseType, ErrorType>(MethodType.POST, learning, config!, body)
+        .httpClient(client)
         .url(url)
         .type(type)
         .errorType(errorType)
@@ -69,7 +69,8 @@ class NetworkManager {
         .tag(tag);
   }
 
-  GenericRequestObject<RequestType, ResponseType, ErrorType> put<RequestType extends Serializable, ResponseType extends Serializable, ErrorType extends Serializable>({
+  GenericRequestObject<RequestType, ResponseType, ErrorType>
+  put<RequestType extends Serializable, ResponseType extends Serializable, ErrorType extends Serializable>({
     required String url,
     required dynamic body,
     required ResponseType type,
@@ -83,6 +84,7 @@ class NetworkManager {
     String? tag,
   }) {
     return GenericRequestObject<RequestType, ResponseType, ErrorType>(MethodType.PUT, learning, config!, body)
+        .httpClient(client)
         .url(url)
         .type(type)
         .errorType(errorType)
@@ -95,7 +97,8 @@ class NetworkManager {
         .tag(tag);
   }
 
-  GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType> delete<ResponseType extends Serializable, ErrorType extends Serializable>({
+  GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType>
+  delete<ResponseType extends Serializable, ErrorType extends Serializable>({
     required String url,
     required ResponseType type,
     required ErrorType errorType,
@@ -107,6 +110,7 @@ class NetworkManager {
     String? tag,
   }) {
     return GenericRequestObject<Serializable<dynamic>, ResponseType, ErrorType>(MethodType.DELETE, learning, config!)
+        .httpClient(client)
         .url(url)
         .type(type)
         .errorType(errorType)

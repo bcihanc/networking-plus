@@ -41,6 +41,7 @@ class GenericRequestObject<RequestType extends Serializable,
   NetworkCache? _cache;
   CancelableOperation? _cancelable;
   String? _tag;
+  HttpClient? client;
 
   final RequestId id = new RequestId();
 
@@ -65,6 +66,11 @@ class GenericRequestObject<RequestType extends Serializable,
       _headers?.addAll(_config!.headers);
     }
     NetworkCancellation.getInstance().add(this);
+  }
+
+  GenericRequestObject<RequestType, ResponseType, ErrorType> httpClient(HttpClient? httpClient) {
+    client = httpClient;
+    return this;
   }
 
   GenericRequestObject<RequestType, ResponseType, ErrorType> url(String url) {
@@ -219,21 +225,21 @@ class GenericRequestObject<RequestType extends Serializable,
   }
 
   Future<HttpClientRequest> _request() async {
-    final client = HttpClient();
-    client.connectionTimeout =
+    final _client = client ?? HttpClient();
+    _client.connectionTimeout =
         _config == null ? Duration(minutes: 1) : _config!.timeout;
     if (_uri != null) {
       switch (_methodType!) {
         case MethodType.GET:
-          return await client.getUrl(_uri!);
+          return await _client.getUrl(_uri!);
         case MethodType.POST:
-          return await client.postUrl(_uri!);
+          return await _client.postUrl(_uri!);
         case MethodType.PUT:
-          return await client.putUrl(_uri!);
+          return await _client.putUrl(_uri!);
         case MethodType.DELETE:
-          return await client.deleteUrl(_uri!);
+          return await _client.deleteUrl(_uri!);
         case MethodType.UPDATE:
-          return await client.patchUrl(_uri!);
+          return await _client.patchUrl(_uri!);
       }
     }
 
@@ -460,7 +466,7 @@ class GenericRequestObject<RequestType extends Serializable,
           listener: _listener,
           type: _type,
         );
-      } 
+      }
       return customErrorHandler(
           new Exception(exception.toString()), NetworkErrorType.SOCKET_ERROR);
     } on TimeoutException catch (exception) {
