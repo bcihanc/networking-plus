@@ -24,11 +24,11 @@ import 'serializable_object.dart';
 
 class GenericRequestObject<RequestType extends Serializable,
     ResponseType extends Serializable, ErrorType extends Serializable> {
-  Set<Header>? _headers;
+  Set<Header>? headers;
   ContentType? _contentType;
   MethodType? _methodType;
   Duration? _timeout;
-  Uri? _uri;
+  Uri? uri;
   NetworkLearning? _learning;
   NetworkConfig? _config;
   NetworkListener? _listener;
@@ -54,7 +54,7 @@ class GenericRequestObject<RequestType extends Serializable,
     this._config, [
     this._body,
   ]) {
-    _headers = new Set();
+    headers = new Set();
     _cookies = new Set();
     _parseKeys = new Set();
     _timeout = Duration(seconds: 60);
@@ -63,7 +63,7 @@ class GenericRequestObject<RequestType extends Serializable,
       _parseKeys = _config!.parseKeys;
     }
     if (_config != null && _config!.headers.length > 0) {
-      _headers?.addAll(_config!.headers);
+      headers?.addAll(_config!.headers);
     }
     NetworkCancellation.getInstance().add(this);
   }
@@ -74,7 +74,7 @@ class GenericRequestObject<RequestType extends Serializable,
   }
 
   GenericRequestObject<RequestType, ResponseType, ErrorType> url(String url) {
-    _uri = Uri.parse(_config != null ? _config!.baseUrl + url : url);
+    uri = Uri.parse(_config != null ? _config!.baseUrl + url : url);
     return this;
   }
 
@@ -93,7 +93,7 @@ class GenericRequestObject<RequestType extends Serializable,
   GenericRequestObject<RequestType, ResponseType, ErrorType> addHeaders(
       Iterable<Header>? headers) {
     if (headers != null) {
-      _headers?.addAll(headers);
+      this.headers?.addAll(headers);
     }
     return this;
   }
@@ -106,14 +106,14 @@ class GenericRequestObject<RequestType extends Serializable,
 
   GenericRequestObject<RequestType, ResponseType, ErrorType> addHeader(
       Header? header) {
-    if (_headers != null && header != null) {
+    if (headers != null && header != null) {
       /// check same headers value. if some value income remove older value and update [header]
-      if (_headers!.contains(header)) {
-        _headers?.removeWhere((header) => header.key == header.key);
-        print(_headers?.length);
-        _headers?.add(header);
+      if (headers!.contains(header)) {
+        headers?.removeWhere((header) => header.key == header.key);
+        print(headers?.length);
+        headers?.add(header);
       } else {
-        _headers?.add(header);
+        headers?.add(header);
       }
     }
     return this;
@@ -138,10 +138,10 @@ class GenericRequestObject<RequestType extends Serializable,
   @Deprecated("Use query instead")
   GenericRequestObject<RequestType, ResponseType, ErrorType> addQuery(
       String key, String value) {
-    if (_uri.toString().contains("?")) {
-      _uri = Uri.parse(_uri.toString() + "&$key=$value");
+    if (uri.toString().contains("?")) {
+      uri = Uri.parse(uri.toString() + "&$key=$value");
     } else {
-      _uri = Uri.parse(_uri.toString() + "?$key=$value");
+      uri = Uri.parse(uri.toString() + "?$key=$value");
     }
     return this;
   }
@@ -151,7 +151,7 @@ class GenericRequestObject<RequestType extends Serializable,
           String key, String value, bool preserveHeaderCase) {
     var header = new Header(
         key: key, value: value, preserveHeaderCase: preserveHeaderCase);
-    _headers?.add(header);
+    headers?.add(header);
     return this;
   }
 
@@ -187,14 +187,14 @@ class GenericRequestObject<RequestType extends Serializable,
 
   GenericRequestObject<RequestType, ResponseType, ErrorType> query(
       String key, String value) {
-    var old = _uri.toString();
+    var old = uri.toString();
     var prefix = old.contains("?") ? "&" : "?";
-    _uri = Uri.parse("$old$prefix$key=$value");
+    uri = Uri.parse("$old$prefix$key=$value");
     return this;
   }
 
   GenericRequestObject<RequestType, ResponseType, ErrorType> path(String path) {
-    _uri = Uri.parse(_uri.toString() + "/$path");
+    uri = Uri.parse(uri.toString() + "/$path");
     return this;
   }
 
@@ -228,18 +228,18 @@ class GenericRequestObject<RequestType extends Serializable,
     final _client = client ?? HttpClient();
     _client.connectionTimeout =
         _config == null ? Duration(minutes: 1) : _config!.timeout;
-    if (_uri != null) {
+    if (uri != null) {
       switch (_methodType!) {
         case MethodType.GET:
-          return await _client.getUrl(_uri!);
+          return await _client.getUrl(uri!);
         case MethodType.POST:
-          return await _client.postUrl(_uri!);
+          return await _client.postUrl(uri!);
         case MethodType.PUT:
-          return await _client.putUrl(_uri!);
+          return await _client.putUrl(uri!);
         case MethodType.DELETE:
-          return await _client.deleteUrl(_uri!);
+          return await _client.deleteUrl(uri!);
         case MethodType.UPDATE:
-          return await _client.patchUrl(_uri!);
+          return await _client.patchUrl(uri!);
       }
     }
 
@@ -250,8 +250,8 @@ class GenericRequestObject<RequestType extends Serializable,
     try {
       final request = await _request();
       _cookies?.forEach((cookie) => request.cookies.add(cookie));
-      if (_headers != null) {
-        _headers?.forEach((header) => request.headers.add(
+      if (headers != null) {
+        headers?.forEach((header) => request.headers.add(
             header.key, header.value,
             preserveHeaderCase: header.preserveHeaderCase));
       }
@@ -291,13 +291,13 @@ class GenericRequestObject<RequestType extends Serializable,
         }
       }
 
-      if (_uri != null &&
+      if (uri != null &&
           _cache != null &&
           _isParse != null &&
           _cache!.options.enabled &&
           await _cache!.has()) {
         return _cache!.read<ResponseType>(
-          uri: _uri!,
+          uri: uri!,
           isParse: _isParse!,
           learning: _learning,
           listener: _listener,
@@ -324,7 +324,7 @@ class GenericRequestObject<RequestType extends Serializable,
           _config!.successStatusCode.length > 0 &&
           _config!.successStatusCode.indexOf(response.statusCode) > -1) {
         ResultModel model = ResultModel();
-        model.url = _uri.toString();
+        model.url = uri.toString();
 
         model.cookies = response.cookies;
 
@@ -460,7 +460,7 @@ class GenericRequestObject<RequestType extends Serializable,
           _cache!.options.enabled &&
           _cache!.options.recoverFromException) {
         return _cache!.read<ResponseType>(
-          uri: _uri!,
+          uri: uri!,
           isParse: _isParse!,
           learning: _learning,
           listener: _listener,
